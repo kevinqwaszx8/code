@@ -1,0 +1,107 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>印卡讚 - 授權中心</title>
+    <style>
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Microsoft JhengHei", sans-serif;
+            background-color: #f0f2f5;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            margin: 0;
+            padding: 20px;
+            box-sizing: border-box;
+        }
+        .container {
+            background-color: white;
+            padding: 30px 20px;
+            border-radius: 16px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+            width: 100%;
+            max-width: 400px;
+            text-align: center;
+        }
+        h1 { color: #2c3e50; font-size: 24px; margin-bottom: 10px; }
+        p { color: #7f8c8d; font-size: 14px; margin-bottom: 25px; }
+        input[type="text"] {
+            width: 100%; padding: 15px; font-size: 18px; font-weight: bold;
+            text-align: center; border: 2px solid #bdc3c7; border-radius: 8px;
+            box-sizing: border-box; margin-bottom: 20px; text-transform: uppercase;
+        }
+        button {
+            background-color: #3498db; color: white; border: none; padding: 15px;
+            font-size: 18px; font-weight: bold; border-radius: 8px; width: 100%;
+            cursor: pointer; transition: background-color 0.3s;
+        }
+        .result-box { margin-top: 25px; display: none; }
+        .result-title { font-size: 14px; color: #27ae60; font-weight: bold; margin-bottom: 8px; }
+        .result-key {
+            font-size: 22px; font-weight: bold; color: #2c3e50;
+            background-color: #e8f8f5; padding: 15px; border-radius: 8px; word-break: break-all;
+        }
+    </style>
+</head>
+<body>
+
+<script>
+    const urlParams = new URLSearchParams(window.location.search);
+    const myToken = urlParams.get('token');
+    
+    // 如果暗號不等於 KevinSuperToken2026X，直接跳轉走，不顯示網頁
+    if (myToken !== "KevinSuperToken2026X") {
+        window.location.href = "https://www.google.com";
+    }
+</script>
+
+<div class="container">
+    <h1>印卡讚 授權中心</h1>
+    <p>開發者專用：M120 標籤系統</p>
+    <input type="text" id="machineCode" placeholder="請輸入客戶機器碼" autocomplete="off">
+    <button onclick="generateAndCopy()">一鍵生成並複製</button>
+    <div class="result-box" id="resultBox">
+        <div class="result-title">✅ 授權碼已生成並複製</div>
+        <div class="result-key" id="resultKey"></div>
+    </div>
+</div>
+
+<script>
+    const SECRET_SALT = "Kevin_M120_Auth_2026_SuperSecret";
+
+    async function sha256(message) {
+        const msgBuffer = new TextEncoder().encode(message);
+        const hashBuffer = await crypto.subtle.digest('SHA-256', msgBuffer);
+        const hashArray = Array.from(new Uint8Array(hashBuffer));
+        return hashArray.map(b => b.toString(16).padStart(2, '0')).join('');
+    }
+
+    async function generateAndCopy() {
+        const inputField = document.getElementById('machineCode');
+        let mCode = inputField.value.trim().toUpperCase();
+        if (!mCode) { alert("請先輸入客戶的機器碼！"); return; }
+
+        const rawText = mCode + "_" + SECRET_SALT;
+        const finalKey = (await sha256(rawText)).substring(0, 16).toUpperCase();
+
+        document.getElementById('resultKey').innerText = finalKey;
+        document.getElementById('resultBox').style.display = 'block';
+
+        try {
+            await navigator.clipboard.writeText(finalKey);
+            const btn = document.querySelector('button');
+            btn.innerText = "已複製！可直接去 LINE 貼上";
+            btn.style.backgroundColor = "#27ae60";
+            setTimeout(() => {
+                btn.innerText = "一鍵生成並複製";
+                btn.style.backgroundColor = "#3498db";
+            }, 3000);
+        } catch (err) {
+            alert("授權碼為：\n" + finalKey);
+        }
+    }
+</script>
+</body>
+</html>
